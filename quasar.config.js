@@ -69,7 +69,20 @@ module.exports = configure(function (ctx) {
 
       // https://v2.quasar.dev/quasar-cli-webpack/handling-webpack
       // "chain" is a webpack-chain object https://github.com/neutrinojs/webpack-chain
-      // chainWebpack (/* chain */) {}
+      // chainWebpack (chain) {
+      //   chain.module.rule('json')
+      //     .test(/\.json$/)
+      //     .use('canvg')
+      //       .loader('canvg')
+      //   chain.module.rule('json')
+      //   .test(/\.json$/)
+      //   .use('html2canvas')
+      //     .loader('html2canvas')
+      //   chain.module.rule('json')
+      //   .test(/\.json$/)
+      //   .use('dompurify')
+      //     .loader('dompurify')
+      // }
     },
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-webpack/quasar-config-js#Property%3A-devServer

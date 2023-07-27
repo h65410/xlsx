@@ -6,3 +6,10 @@ export interface Todo {
 export interface Meta {
   totalCount: number;
 }
+
+export interface Prayers {
+  label: string;
+  start: string;
+  end: string;
+}
+

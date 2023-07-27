@@ -18,7 +18,7 @@
             كشف حساب ( {{ company.company_name }} ) لغاية {{ store.date }}
           </div>
           <q-space />
-          <div class="text-caption">
+          <div class="text-caption cursor-pointer">
             الكود {{ company.company_id }}
           </div>
         </div>
@@ -93,7 +93,7 @@ import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import {useClosedContractsStore} from "../stores/closed-contracts"
 import { read, utils } from 'xlsx';
-// import { jsPDF } from "jspdf";
+import { QTableProps } from 'quasar';
 
 const { t } = useI18n({ useScope: 'global' })
 const store = useClosedContractsStore()
@@ -111,152 +111,34 @@ const store = useClosedContractsStore()
 //   return _options
 // })
 
-const columns = [
-  {
-    name: 'region',
-    field: 'region',
+const columns: QTableProps['columns'] = [
+  'region',
+  'contract_number',
+  'car_type',
+  'car_plate',
+  'contract_date',
+  'contract_duration',
+  'rent_price',
+  'rent_total',
+  'extra_hour',
+  'extra_klm',
+  'discount',
+  'penalties',
+  'vat',
+  'exchange_amount',
+  'paid_amount',
+  'remain_amount'
+].map(v => {
+  return {
+    name: v,
+    field: v,
     required: true,
-    label: t('region'),
+    label: t(v),
     align: 'center',
     headerStyle: 'font-weight: bold',
     sortable: false
-  },
-  {
-    name: 'contract_number',
-    field: 'contract_number',
-    required: true,
-    label: t('contract_number'),
-    align: 'center',
-    headerStyle: 'font-weight: bold',
-    sortable: false
-  },
-  {
-    name: 'car_type',
-    field: 'car_type',
-    required: true,
-    label: t('car_type'),
-    align: 'center',
-    headerStyle: 'font-weight: bold',
-    sortable: false
-  },
-  {
-    name: 'car_plate',
-    field: 'car_plate',
-    required: true,
-    label: t('car_plate'),
-    align: 'center',
-    headerStyle: 'font-weight: bold',
-    sortable: false
-  },
-  {
-    name: 'contract_date',
-    field: 'contract_date',
-    required: true,
-    label: t('contract_date'),
-    align: 'center',
-    headerStyle: 'font-weight: bold',
-    sortable: false
-  },
-  {
-    name: 'contract_duration',
-    field: 'contract_duration',
-    required: true,
-    label: t('contract_duration'),
-    align: 'center',
-    headerStyle: 'font-weight: bold',
-    sortable: false
-  },
-  {
-    name: 'rent_price',
-    field: 'rent_price',
-    required: true,
-    label: t('rent_price'),
-    align: 'center',
-    headerStyle: 'font-weight: bold',
-    sortable: false
-  },
-  {
-    name: 'rent_total',
-    field: 'rent_total',
-    required: true,
-    label: t('rent_total'),
-    align: 'center',
-    headerStyle: 'font-weight: bold',
-    sortable: false
-  },
-  {
-    name: 'extra_hour',
-    field: 'extra_hour',
-    required: true,
-    label: t('extra_hour'),
-    align: 'center',
-    headerStyle: 'font-weight: bold',
-    sortable: false
-  },
-  {
-    name: 'extra_klm',
-    field: 'extra_klm',
-    required: true,
-    label: t('extra_klm'),
-    align: 'center',
-    headerStyle: 'font-weight: bold',
-    sortable: false
-  },
-  {
-    name: 'discount',
-    field: 'discount',
-    required: true,
-    label: t('discount'),
-    align: 'center',
-    headerStyle: 'font-weight: bold',
-    sortable: false
-  },
-  {
-    name: 'penalties',
-    field: 'penalties',
-    required: true,
-    label: t('penalties'),
-    align: 'center',
-    headerStyle: 'font-weight: bold',
-    sortable: false
-  },
-  {
-    name: 'vat',
-    field: 'vat',
-    required: true,
-    label: t('vat'),
-    align: 'center',
-    headerStyle: 'font-weight: bold',
-    sortable: false
-  },
-  {
-    name: 'exchange_amount',
-    field: 'exchange_amount',
-    required: true,
-    label: t('exchange_amount'),
-    align: 'center',
-    headerStyle: 'font-weight: bold',
-    sortable: false
-  },
-  {
-    name: 'paid_amount',
-    field: 'paid_amount',
-    required: true,
-    label: t('paid_amount'),
-    align: 'center',
-    headerStyle: 'font-weight: bold',
-    sortable: false
-  },
-  {
-    name: 'remain_amount',
-    field: 'remain_amount',
-    required: true,
-    label: t('remain_amount'),
-    align: 'center',
-    headerStyle: 'font-weight: bold',
-    sortable: false,
   }
-]
+})
 // const company = computed(() => store.companies[model.value?.value])
 
 const file = ref<any>(null);
@@ -305,19 +187,6 @@ watch(file, async (val) => {
   store.companies = companies;
 })
 
-// const savePdf = () => {
-//   const body = window.document.body
-//   const doc = new jsPDF({
-//   orientation: "landscape"
-// });
-// doc.html(body, {
-//     callback: (pdf) => {
-//       pdf.save('a4')
-//     },
-//     margin: 32, // optional: page margin
-//     // optional: other HTMLOptions
-//   })
-// }
 
 // const f = await (await fetch("https://sheetjs.com/pres.xlsx")).arrayBuffer();
 // const wb = read(f);
