@@ -1,36 +1,48 @@
 <template>
   <q-page class="q-pt-lg">
-    <div v-if="!store._file" class="row justify-center">
-      <div class="col-auto q-px-sm">
-        <div class="text-center text-subtitle1">بريك 1</div>
-        <q-time
-        v-model="store.p1"
-        format24h
-        />
+    <div v-if="!store.hasData">
+      <div v-if="!store._file" class="row justify-center">
+        <q-file v-model="store._file" label="تحميل الملف" accept=".csv" style="width: 99px;" filled />
       </div>
-      <div class="col-auto q-px-sm">
-        <div class="text-center text-subtitle1">بريك 2</div>
-        <q-time
-        v-model="store.p2"
-        format24h
-        />
+      <div v-else class="row justify-center">
+        <div class="col-12 text-center text-h6 q-pb-lg q-mb-lg">{{ store.day }} {{ store.date.split('-').reverse().join('-') }}</div>
+        <div class="col-auto q-px-sm">
+          <div class="text-center text-subtitle1">بريك 1</div>
+          <q-time
+          v-model="store.p1"
+          format24h
+          />
+        </div>
+        <div class="col-auto q-px-sm">
+          <div class="text-center text-subtitle1">بريك 2</div>
+          <q-time
+          v-model="store.p2"
+          format24h
+          />
+        </div>
+        <div class="col-auto q-px-sm">
+          <div class="text-center text-subtitle1">بريك 3</div>
+          <q-time
+          v-model="store.p3"
+          format24h
+          />
+        </div>
+        <div class="col-auto q-px-sm">
+          <div class="text-center text-subtitle1">بريك 4</div>
+          <q-time
+          v-model="store.p4"
+          format24h
+          />
+        </div>
+        <div class="col-12 q-py-lg"></div>
+        <q-btn v-if="!store.error" :loading="store.processing" dir="ltr" color="primary" style="width: 150px" @click="store.parseFile">
+          بدء المعالجة
+          <template v-slot:loading>
+            <q-spinner-hourglass class="on-left" />
+            ...جاري المعالجة
+          </template>
+        </q-btn>
       </div>
-      <div class="col-auto q-px-sm">
-        <div class="text-center text-subtitle1">بريك 3</div>
-        <q-time
-        v-model="store.p3"
-        format24h
-        />
-      </div>
-      <div class="col-auto q-px-sm">
-        <div class="text-center text-subtitle1">بريك 4</div>
-        <q-time
-        v-model="store.p4"
-        format24h
-        />
-      </div>
-      <div class="col-12 q-py-lg"></div>
-      <q-file v-model="store._file" label="تحميل الملف" accept=".csv" style="width: 99px;" filled />
     </div>
     <div v-else class="row justify-evenly">
       <div class="col-12 text-center text-h6 q-pb-lg q-mb-lg">{{ store.day }} {{ store.date.split('-').reverse().join('-') }}</div>
@@ -100,19 +112,21 @@
         <q-btn label="طباعة" @click="printPdf" />
       </div>
     </div>
-    <div class="q-pa-md text-center">
+    <div v-if="store.error" class="q-pa-md q-mt-md text-center text-white bg-red">
       {{ store.error }}
     </div>
   </q-page>
 </template>
 
 <script setup>
-import { computed, onBeforeMount, watch } from "vue";
+import { computed, onBeforeMount, ref, watch } from "vue";
 import { useCentralStore } from "../stores/central/index";
 import pdfMake from "../assets/pdfmake/pdfmake.min.js";
 import pdfFonts from '../assets/pdfmake/vfs_fonts.js';
 
 const store = useCentralStore();
+
+const loading = ref(false)
 
 const repCols = [
   {
@@ -473,7 +487,7 @@ function rtl(txt) {
 }
 
 watch(() => store._file, (val) => {
-  store.parseFile()
+  store.loadData()
 })
 
 onBeforeMount(() => {
