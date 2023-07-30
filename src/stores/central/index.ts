@@ -19,6 +19,7 @@ export const useCentralStore = defineStore('central', {
     p3: "00:00",
     p4: "00:00",
     p12: 0,
+    _p12: [] as any[],
     p34: 0,
   }),
   getters: {
@@ -36,6 +37,8 @@ export const useCentralStore = defineStore('central', {
     e84A: (state) => Object.values(state._ev).filter(v => v["1084"] == "ANSWERED").length,
     e80N: (state) => Object.values(state._ev).filter(v => v["1080"] == "NO ANSWER" && v["1084"] != "ANSWERED").length,
     e84N: (state) => Object.values(state._ev).filter(v => v["1084"] == "NO ANSWER" && v["1080"] != "ANSWERED").length,
+    _e80N: (state) => Object.values(state._ev).filter(v => v["1080"] == "NO ANSWER" && v["1084"] != "ANSWERED"),
+    _e84N: (state) => Object.values(state._ev).filter(v => v["1084"] == "NO ANSWER" && v["1080"] != "ANSWERED"),
     e80GB: (state) => Object.values(state._ev).filter(v => v["1080"] == "BUSY" && v["1084"] == "ANSWERED").length,
     e84GB: (state) => Object.values(state._ev).filter(v => v["1084"] == "BUSY" && v["1080"] =="ANSWERED" ).length,
     e80RB: (state) => Object.values(state._ev).filter(v => v["1080"] == "BUSY" && v["1084"] == "NO ANSWER").length,
@@ -52,7 +55,7 @@ export const useCentralStore = defineStore('central', {
           skipEmptyLines: 'greedy',
           complete: async (results, _file) => {
             try {
-              const data = this._data = results.data.filter(v => ["1080", "1084"].includes(v[2]))
+              const data = this._data = results.data.filter(v => ["1080", "1084"].includes(v[21]))
               const date0 = Object.values(data)[0][12].substring(0,10)
               const AHPath = new Intl.DateTimeFormat('en-SA-u-ca-islamic-umalqura', { year: "numeric" }).format(new Date()).split(' ')[0]
               const AH = require(`../../assets/${AHPath}.json`)
@@ -79,7 +82,9 @@ export const useCentralStore = defineStore('central', {
       this._data.forEach((v: any) => {
         const id = v[19]
         if (!data[id]) data[id] = {id, d: v[12]}
-        data[id][v[2].toString()] = v[17]
+        if (!data[id][v[21].toString()]) {
+          data[id][v[21].toString()] = v[17]
+        }
       })
         const dt = Object.values(data)[0].d.substring(0,10)
         this.date = date.formatDate(date.extractDate(dt, "YYYY-MM-DD"), "YYYY-MM-DD")
@@ -109,6 +114,7 @@ export const useCentralStore = defineStore('central', {
               this._mo[v.id] = v
             } else {
               this.p12++
+              this._p12.push(v)
             }
           }
           if (isEvening) {
@@ -124,6 +130,7 @@ export const useCentralStore = defineStore('central', {
             this.hasData = true
           }, 3000)
         });
+        console.log(this._p12)
     },
   },
 });
