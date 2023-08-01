@@ -130,7 +130,7 @@ export const useCentralStore = defineStore('central', {
             this.hasData = true
           }, 3000)
         });
-        console.log(this._p12)
+        // console.log(this._p12)
     },
   },
 });

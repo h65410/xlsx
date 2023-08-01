@@ -259,9 +259,10 @@ pdfMake.fonts = {
     normal: 'Amiri-Regular.ttf',
     bold: 'Amiri-Bold.ttf',
   },
-  Kufi: {
-    normal: 'NotoKufiArabic-Regular.ttf',
-    bold: 'NotoKufiArabic-Bold.ttf',
+  Almarai: {
+    normal: 'Almarai-Regular.ttf',
+    bold: 'Almarai-Bold.ttf',
+    extraBold: 'Almarai-ExtraBold.ttf',
   },
 }
 
@@ -272,34 +273,37 @@ const docDefinition = computed(() => {
     content: [
       {
         text: store.date + ' ' + store.day,
-        fontSize: 14,
+        fontSize: 12,
         alignment: 'right',
-        marginTop: 45,
+        marginTop: 120,
       },
       {
         text: 'والمسائية الصباحية الدوام فترات خلال سنتر الكول لقسم الواردة المكالمات لعدد اليومي التقرير ',
         alignment: 'center',
+        font: 'Amiri',
         bold: true,
         decoration: 'underline',
         fontSize: 14,
         marginRight: 4,
-        marginTop: 20,
+        marginTop: 45,
       },
       {
         text: rtl(' الفترة الصباحية ]  من الساعة 9  صباحا وحتى الساعة 4  عصرا ['),
         alignment: 'right',
+        font: 'Amiri',
+        fontSize: 12,
         marginRight: 45,
-        marginTop: 20,
+        marginTop: 45,
       },
       {
         columns: [
           {
-            marginLeft: 120,
+            marginLeft: 70,
             table: {
               // headers are automatically repeated if the table spans over multiple pages
               // you can declare how many rows should be treated as headers
               headerRows: 1,
-              widths: [ 45, 250 ],
+              widths: [ 45, 300 ],
 
               body: [
                 [
@@ -340,12 +344,12 @@ const docDefinition = computed(() => {
       {
         columns: [
           {
-            marginLeft: 210,
+            marginLeft: 205,
             table: {
               // headers are automatically repeated if the table spans over multiple pages
               // you can declare how many rows should be treated as headers
               headerRows: 1,
-              widths: [ 45, 45, 45, 50 ],
+              widths: [ 45, 50, 45, 50 ],
 
               body: [
                 [
@@ -374,18 +378,20 @@ const docDefinition = computed(() => {
       {
         text: rtl(' الفترة المسائية ]  من الساعة 4  عصرا وحتى الساعة 11  مساء ['),
         alignment: 'right',
+        font: 'Amiri',
+        fontSize: 12,
         marginRight: 45,
         marginTop: 60,
       },
       {
         columns: [
           {
-            marginLeft: 120,
+            marginLeft: 70,
             table: {
               // headers are automatically repeated if the table spans over multiple pages
               // you can declare how many rows should be treated as headers
               headerRows: 1,
-              widths: [ 45, 250 ],
+              widths: [ 45, 300 ],
 
               body: [
                 [
@@ -426,12 +432,12 @@ const docDefinition = computed(() => {
       {
         columns: [
           {
-            marginLeft: 210,
+            marginLeft: 205,
             table: {
               // headers are automatically repeated if the table spans over multiple pages
               // you can declare how many rows should be treated as headers
               headerRows: 1,
-              widths: [ 45, 45, 45, 50 ],
+              widths: [ 45, 50, 45, 50 ],
 
               body: [
                 [
@@ -459,7 +465,7 @@ const docDefinition = computed(() => {
       },
     ],
     defaultStyle: {
-      font: 'Amiri',
+      font: 'Almarai',
       alignment: 'center',
     },
     styles: {
