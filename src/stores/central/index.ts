@@ -55,7 +55,9 @@ export const useCentralStore = defineStore('central', {
           skipEmptyLines: 'greedy',
           complete: async (results, _file) => {
             try {
-              const data = this._data = results.data.filter(v => ["1080", "1084"].includes(v[21]))
+              const data = this._data = results.data
+                .filter(v => ["1080", "1084"].includes(v[21]))
+                .filter(v => v[26] == "RINGGROUP[6405]")
               const date0 = Object.values(data)[0][12].substring(0,10)
               const AHPath = new Intl.DateTimeFormat('en-SA-u-ca-islamic-umalqura', { year: "numeric" }).format(new Date()).split(' ')[0]
               const AH = require(`../../assets/${AHPath}.json`)
@@ -93,7 +95,7 @@ export const useCentralStore = defineStore('central', {
         const mEnd = date.extractDate("15:59", "H:mm")
         const eStart = date.extractDate("16:00", "H:mm")
         const eEnd = date.extractDate("22:59", "H:mm")
-        Object.values(data).forEach((v: any) => {
+        Object.values(data).filter(v => !(v['1080'] == 'BUSY' && v['1084'] == 'BUSY')).forEach((v: any) => {
           const d = date.extractDate(date.formatDate(date.extractDate(v.d, "YYYY-MM-DD HH:mm"), "HH:mm"), "HH:mm")
           const p1Start = date.extractDate(this.p1, "H:mm")
           const p1End = date.addToDate(p1Start, {minutes: 30})

@@ -272,10 +272,15 @@ const docDefinition = computed(() => {
     pageMargins: [ 60, 8 ],
     content: [
       {
-        text: store.date + ' ' + store.day,
         fontSize: 12,
         alignment: 'right',
+        decoration: 'underline',
         marginTop: 120,
+        text: [
+          {text: store.date },
+          ' ',
+          {text: store.day },
+        ],
       },
       {
         text: 'والمسائية الصباحية الدوام فترات خلال سنتر الكول لقسم الواردة المكالمات لعدد اليومي التقرير ',
