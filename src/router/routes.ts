@@ -12,9 +12,9 @@ const routes: RouteRecordRaw[] = [
     children: [{ path: '', component: () => import('pages/AdhanPage.vue') }],
   },
   {
-    path: '/csv',
+    path: '/check',
     component: () => import('layouts/MainLayout.vue'),
-    children: [{ path: '', component: () => import('pages/CsvPage.vue') }],
+    children: [{ path: '', component: () => import('pages/CheckPage.vue') }],
   },
 
   // Always leave this as last one,
