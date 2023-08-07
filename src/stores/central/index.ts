@@ -18,6 +18,7 @@ export const useCentralStore = defineStore('central', {
   actions: {
     parseFile() {
       this.processing = true
+      const checkData: any[] = []
       this.files.forEach(file => {
         Papa.parse(file, {
           skipEmptyLines: 'greedy',
@@ -55,6 +56,12 @@ export const useCentralStore = defineStore('central', {
                   data[id][v['Dest Channel Extension']] = v['Disposition']
                 }
               })
+
+              // Fix Disconnected
+              Object.keys(data).forEach(k => {
+                if (!data[k]['1080']) data[k]['1080'] = "NO ANSWER"
+                if (!data[k]['1084']) data[k]['1084'] = "NO ANSWER"
+              });
 
               Object.values(data)
                 .filter(v => !(v['1080'] == 'BUSY' && v['1084'] == 'BUSY'))
@@ -150,7 +157,7 @@ export const useCentralStore = defineStore('central', {
                 ]
 
               if (this.files.length > 1) {
-                this.checkData.push({
+                checkData.push({
                   date: d0,
                   day: date.formatDate(d0, "dddd"),
                   MA: M['A'],
@@ -178,6 +185,11 @@ export const useCentralStore = defineStore('central', {
                   ERB84: E['RB84'],
                   EGB84: E['GB84'],
                 })
+
+                if (checkData.length == this.files.length) {
+                  this.checkData = checkData.sort((a, b) => a['date'] > b['date']? 0 : 1)
+                  console.log(JSON.stringify(this.checkData))
+                }
               } else {
                 setTimeout(() => {
                   this.data = {M, E}
