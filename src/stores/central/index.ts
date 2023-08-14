@@ -1,24 +1,36 @@
 import { defineStore } from 'pinia';
 import Papa from "papaparse";
 import { date } from 'quasar';
+import { useAppStore } from "../app"
 
 export const useCentralStore = defineStore('central', {
   state: () => ({
-    error: "",
     processing: false,
     files: [] as any[],
-    data: null as any,
-    date: '' as string,
-    day: '' as string,
-    checkData: [] as any[],
+    data: [] as any[],
+    dn: 0,
+    duty0: getDuty(0),
+    duty5: getDuty(5),
+    duty6: getDuty(6),
+    emp: getEmp(),
   }),
   getters: {
     //
   },
   actions: {
+    saveDuty(day: 0 | 5 | 6) {
+      const dn: "duty0" | "duty5" | "duty6" = `duty${day}`
+      localStorage.setItem(dn, JSON.stringify(this[dn]))
+    },
+    saveEmp() {
+      localStorage.setItem("emp", JSON.stringify(this.emp))
+    },
+    resetEmp() {
+      this.emp = getEmp()
+    },
     parseFile() {
       this.processing = true
-      const checkData: any[] = []
+      const data1: any[] = []
       this.files.forEach(file => {
         Papa.parse(file, {
           skipEmptyLines: 'greedy',
@@ -29,11 +41,17 @@ export const useCentralStore = defineStore('central', {
               const AHPath = new Intl.DateTimeFormat('en-SA-u-ca-islamic-umalqura', { year: "numeric" }).format(new Date()).split(' ')[0]
               const AH = require(`../../assets/${AHPath}.json`)
               const d0 = results.data[0]['Start Time'].split(' ')[0].substring(0, 10)
+              const dn = [5, 6].includes(date.getDayOfWeek(d0))? date.getDayOfWeek(d0) : 0
+              const duty = getDuty(dn)
+              const mDutyStart = date.formatDate(date.extractDate(duty['M']['start'], "H:mm"), "h:mm")
+              const mDutyEnd = date.formatDate(date.extractDate(duty['M']['end'], "H:mm"), "h:mm")
+              const eDutyStart = date.formatDate(date.extractDate(duty['E']['start'], "H:mm"), "h:mm")
+              const eDutyEnd = date.formatDate(date.extractDate(duty['E']['end'], "H:mm"), "h:mm")
               const AHDay = AH[d0]
-              const mStart = date.extractDate("9:00", "H:mm")
-              const mEnd = date.extractDate("15:59", "H:mm")
-              const eStart = date.extractDate("16:00", "H:mm")
-              const eEnd = date.extractDate("22:59", "H:mm")
+              const mStart = date.extractDate(duty['M']['start'], "H:mm")
+              const mEnd = date.subtractFromDate(date.extractDate(duty['M']['end'], "H:mm"), { minutes: 1 })
+              const eStart = date.extractDate(duty['E']['start'], "H:mm")
+              const eEnd = date.subtractFromDate(date.extractDate(duty['E']['end'], "H:mm"), { minutes: 1 })
               const p1Start = date.extractDate(AHDay[4], "H:mm")
               const p1End = date.addToDate(p1Start, {minutes: 30})
               const p2Start = date.extractDate(AHDay[5], "H:mm")
@@ -56,6 +74,12 @@ export const useCentralStore = defineStore('central', {
                   data[id][v['Dest Channel Extension']] = v['Disposition']
                 }
               })
+
+              const lost80 = Object.values(data).filter(v => !v["1080"])
+              const lost84 = Object.values(data).filter(v => !v["1084"])
+
+              if (lost80.length > 0) console.log('lost80:', lost80)
+              if (lost84.length > 0) console.log('lost84:', lost84)
 
               // Fix Disconnected
               Object.keys(data).forEach(k => {
@@ -105,24 +129,8 @@ export const useCentralStore = defineStore('central', {
               M['A'] = M['A80'] + M['A84']
               M['N'] = (M['N80'] + M['RB80'] + M['N84'] + M['RB84'])/2
               M['AN'] = M['A'] + M['N']
-              M['details'] = [
-                  {
-                    name: '1080',
-                    answered: M['A80'],
-                    no_answer: M['N80'],
-                    busy: M['RB80'],
-                    busy2: M['GB80'],
+              M['title'] = `الفترة الصباحية [ من الساعة ${mDutyStart} صباحا وحتى الساعة ${mDutyEnd} عصرا ]`
 
-                  },
-                  {
-                    name: '1084',
-                    answered: M['A84'],
-                    no_answer: M['N84'],
-                    busy: M['RB84'],
-                    busy2: M['GB84'],
-
-                  },
-                ]
               const _EP = data0.filter(v => v['a'] == 'pm' && ['p3', 'p4'].includes(v['p']))
               const _E = data0.filter((v: any) => v['a'] == 'pm' && v['p'] == '')
               const E: Record<string, any> = {P: _EP.length}
@@ -137,69 +145,27 @@ export const useCentralStore = defineStore('central', {
               E['A'] = E['A80'] + E['A84']
               E['N'] = (E['N80'] + E['RB80'] + E['N84'] + E['RB84'])/2
               E['AN'] = E['A'] + E['N']
-              E['details'] = [
-                  {
-                    name: '1080',
-                    answered: E['A80'],
-                    no_answer: E['N80'],
-                    busy: E['RB80'],
-                    busy2: E['GB80'],
+              E['title'] = `الفترة المسائية [ من الساعة ${eDutyStart} عصرا وحتى الساعة ${eDutyEnd} مساء ]`
 
-                  },
-                  {
-                    name: '1084',
-                    answered: E['A84'],
-                    no_answer: E['N84'],
-                    busy: E['RB84'],
-                    busy2: E['GB84'],
+              data1.push({
+                date: d0,
+                day: date.formatDate(d0, "dddd"),
+                lost: {
+                  "1080": lost80.length,
+                  "1084": lost84.length
+                },
+                M,
+                E
+              })
 
-                  },
-                ]
-
-              if (this.files.length > 1) {
-                checkData.push({
-                  date: d0,
-                  day: date.formatDate(d0, "dddd"),
-                  MA: M['A'],
-                  MN: M['N'],
-                  MAN: M['AN'],
-                  MP: M['P'],
-                  MA80: M['A80'],
-                  MN80: M['N80'],
-                  MRB80: M['RB80'],
-                  MGB80: M['GB80'],
-                  MA84: M['A84'],
-                  MN84: M['N84'],
-                  MRB84: M['RB84'],
-                  MGB84: M['GB84'],
-                  EA: E['A'],
-                  EN: E['N'],
-                  EAN: E['AN'],
-                  EP: E['P'],
-                  EA80: E['A80'],
-                  EN80: E['N80'],
-                  ERB80: E['RB80'],
-                  EGB80: E['GB80'],
-                  EA84: E['A84'],
-                  EN84: E['N84'],
-                  ERB84: E['RB84'],
-                  EGB84: E['GB84'],
-                })
-
-                if (checkData.length == this.files.length) {
-                  this.checkData = checkData.sort((a, b) => a['date'] > b['date']? 0 : 1)
-                  console.log(JSON.stringify(this.checkData))
-                }
-              } else {
-                setTimeout(() => {
-                  this.data = {M, E}
-                  this.date = d0
-                  this.day = date.formatDate(d0, "dddd")
-                  this.processing = false
-                }, 2500)
+              if (data1.length == this.files.length) {
+                this.data = data1.sort((a, b) => new Date(a['date']) > new Date(b['date'])? -1 : 1)
+                // console.log(JSON.stringify(this.data))
+                setTimeout(() => {this.processing = false}, 2000)
               }
             } catch (error: any) {
-              this.error = error.message
+              console.log(error)
+              useAppStore().error = error.message
             }
           }
         })
@@ -207,3 +173,78 @@ export const useCentralStore = defineStore('central', {
     },
   },
 });
+
+function getDuty(day: any) {
+  let str = ""
+  switch (day) {
+    case 5:
+      str = localStorage.getItem("duty5") || JSON.stringify({
+        M: {
+            start: "16:00",
+            end: "23:00",
+            startLabel: "بداية الدوام الصباحي",
+            endLabel: "نهاية الدوام الصباحي",
+          },
+        E: {
+          start: "16:00",
+          end: "23:00",
+          startLabel: "بداية الدوام المسائي",
+          endLabel: "نهاية الدوام المسائي",
+        },
+      })
+    break;
+    case 6:
+      str = localStorage.getItem("duty6") || JSON.stringify({
+        M: {
+            start: "09:00",
+            end: "16:30",
+            startLabel: "بداية الدوام الصباحي",
+            endLabel: "نهاية الدوام الصباحي",
+          },
+        E: {
+          start: "16:30",
+          end: "23:30",
+          startLabel: "بداية الدوام المسائي",
+          endLabel: "نهاية الدوام المسائي",
+        },
+      })
+    break;
+
+    default:
+      str = localStorage.getItem("duty0") || JSON.stringify({
+        M: {
+            start: "08:30",
+            end: "16:30",
+            startLabel: "بداية الدوام الصباحي",
+            endLabel: "نهاية الدوام الصباحي",
+          },
+        E: {
+          start: "16:30",
+          end: "23:30",
+          startLabel: "بداية الدوام المسائي",
+          endLabel: "نهاية الدوام المسائي",
+        },
+      })
+    break;
+  }
+
+  return JSON.parse(str)
+}
+
+function getEmp() {
+  const str = localStorage.getItem("emp") || JSON.stringify({
+    M: {
+        "1080": "برزان الشمري",
+        "1084": "نواف الحربي",
+        label: "صباح",
+      },
+    E: {
+      "1080": "ضيدان العجمي",
+      "1084": "صالح البقمي",
+      label: "مساء",
+    },
+    withEmp: true,
+  })
+
+  return JSON.parse(str)
+}

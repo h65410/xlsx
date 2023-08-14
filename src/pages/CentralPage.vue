@@ -1,94 +1,71 @@
 <template>
-  <q-page class="q-pt-lg">
-    <div v-if="!store.data">
-      <div v-if="!store.files[0]" class="row justify-center">
-        <q-file v-model="store.files[0]" label="تحميل الملف" accept=".csv" style="width: 99px;" filled />
+  <q-page class="q-pt-lg q-px-sm">
+    <div v-if="store.data[0]" class="row justify-evenly">
+      <div class="col-12 text-center text-h6 q-pb-lg q-mb-lg">
+        {{ store.data[0]['day'] }} {{ store.data[0]['date'].split('-').reverse().join('-') }}
       </div>
-      <div v-else class="row justify-center">
-        <q-spinner-hourglass
-          color="primary"
-          size="3em"
-        />
-      </div>
-    </div>
-    <div v-else class="row justify-evenly">
-      <div class="col-12 text-center text-h6 q-pb-lg q-mb-lg">{{ store.day }} {{ store.date.split('-').reverse().join('-') }}</div>
-      <q-card class="col-4">
-        <p class="q-pa-sm q-ma-none text-subtitle1">الفترة الصباحية [ من الساعة 9 صباحا وحتى الساعة 4 عصرا ]</p>
+      <q-card v-for="k in keys" class="col-4">
+        <q-card-section>
+          <p class="q-ma-none text-subtitle1">{{ store.data[0][k]['title'] }}</p>
+        </q-card-section>
         <q-card-section class="q-pt-none">
           <div class="q-pb-xs">
-            <TotalsTable :rows="MRows" />
+            <TotalsTable :rows="rows[k]" />
           </div>
-          <DetailsTable :rows="store.data['M']['details']" />
+          <DetailsTable :k="k.toString()" />
         </q-card-section>
       </q-card>
-      <q-card class="col-4">
-        <p class="q-pa-sm q-ma-none text-subtitle1">الفترة المسائية [ من الساعة 4 عصرا وحتى الساعة 11 مساء ]</p>
-        <q-card-section class="q-pt-none">
-          <div class="q-pb-xs">
-            <TotalsTable :rows="ERows" />
-          </div>
-          <DetailsTable :rows="store.data['E']['details']" />
-        </q-card-section>
-      </q-card>
+      <div class="col-12 q-pt-lg">
+        <div class="row justify-center q-gutter-md">
+          <div class="col-auto">[ مفقود80: {{ store.data[0].lost["1080"] }} ]</div>
+          <div class="col-auto">[ مفقود84: {{ store.data[0].lost["1084"] }} ]</div>
+        </div>
+      </div>
       <PdfButtons />
-    </div>
-    <div v-if="store.error" class="q-pa-md q-mt-md text-center text-white bg-red">
-      {{ store.error }}
     </div>
   </q-page>
 </template>
 
 <script setup>
-import { computed, watch } from "vue"
+import { computed, onBeforeMount } from "vue"
 import { useCentralStore } from "../stores/central/index"
+import { useRouter } from "vue-router"
 import TotalsTable from 'src/components/TotalsTable.vue'
 import DetailsTable from 'src/components/DetailsTable.vue'
 import PdfButtons from 'src/components/PdfButtons.vue'
 
 const store = useCentralStore()
+const router = useRouter()
 
-const MRows = computed(() => [
+const keys = ['M', 'E']
+
+const rows = computed(() => {
+  const obj = {}
+  keys.forEach(k => obj[k] = [
     {
       name: 'مجموع المكالمات التي تم الرد عليها',
-      value: store.data['M']['A']
+      value: store.data[0][k]['A']
     },
     {
       name: 'مجموع المكالمات التي لم يتم الرد عليها ( شامل المشغول )',
-      value: store.data['M']['N']
+      value: store.data[0][k]['N']
     },
     {
       name: 'مجموع المكالمات الواردة ( غير شامل اوقات الصلوات )',
-      value: store.data['M']['AN']
+      value: store.data[0][k]['AN']
     },
     {
       name: 'عدد المكالمات الواردة اوقات الصلوات [ الظهر والعصر ]',
-      value: store.data['M']['P']
+      value: store.data[0][k]['P']
     },
-  ]
-)
+  ])
 
-const ERows = computed(() => [
-    {
-      name: 'مجموع المكالمات التي تم الرد عليها',
-      value: store.data['E']['A']
-    },
-    {
-      name: 'مجموع المكالمات التي لم يتم الرد عليها ( شامل المشغول )',
-      value: store.data['E']['N']
-    },
-    {
-      name: 'مجموع المكالمات الواردة ( غير شامل اوقات الصلوات )',
-      value: store.data['E']['AN']
-    },
-    {
-      name: 'عدد المكالمات الواردة اوقات الصلوات [ الظهر والعصر ]',
-      value: store.data['E']['P']
-    },
-  ]
-)
+  return obj
+})
 
-watch(() => store.files[0], () => store.parseFile())
+onBeforeMount(() => {
+  if (!store.data[0]) router.replace("/")
+})
 </script>
 
 <style>

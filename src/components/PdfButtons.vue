@@ -3,6 +3,7 @@
     <q-btn label="تنزيل" @click="downloadPdf" />
     <q-btn label="عرض" class="q-mx-lg" @click="viewPdf" />
     <q-btn label="طباعة" @click="printPdf" />
+    <div class="full-width q-pt-md"></div>
   </div>
 </template>
 
@@ -26,192 +27,156 @@ pdfMake.fonts = {
   },
 }
 
+function getContent() {
+  const date1 = store.data[0]['date']
+  const day1 = store.data[0]['day']
+  const titles = {
+    M: [
+      'عدد المكالمات الواردة اوقات الصلوات [ الظهر والعصر ]',
+    ],
+    E: [
+      'عدد المكالمات الواردة اوقات الصلوات [ المغرب والعشاء ]',
+    ]
+  }
+
+  const content = [
+    {
+      fontSize: 12,
+      alignment: 'right',
+      decoration: 'underline',
+      marginTop: 120,
+      text: [
+        {text: date1 },
+        ' ',
+        {text: day1 },
+      ],
+    },
+    {
+      text: 'والمسائية الصباحية الدوام فترات خلال سنتر الكول لقسم الواردة المكالمات لعدد اليومي التقرير ',
+      alignment: 'center',
+      font: 'Amiri',
+      bold: true,
+      decoration: 'underline',
+      fontSize: 14,
+      marginRight: 4,
+      marginTop: 45,
+    }
+  ]
+
+  const keys = ['M', 'E']
+  keys.forEach(k => content.push(
+    {
+      text: rtl(store.data[0][k]['title']),
+      alignment: 'right',
+      font: 'Amiri',
+      fontSize: 12,
+      marginRight: 45,
+      marginTop: 45,
+    },
+    {
+      marginLeft: 70,
+      table: {
+        // headers are automatically repeated if the table spans over multiple pages
+        // you can declare how many rows should be treated as headers
+        headerRows: 1,
+        widths: [ 45, 300 ],
+
+        body: [
+          [
+            store.data[0][k]['A'],
+            { text: rtl('مجموع المكالمات التي تم الرد عليها'),
+            alignment: 'right',
+            bold: true }
+          ],
+          [
+            store.data[0][k]['N'],
+            { text: rtl('مجموع المكالمات التي لم يتم الرد عليها ( شامل المشغول )'),
+            alignment: 'right',
+            bold: true }
+          ],
+          [
+            store.data[0][k]['AN'],
+            { text: rtl('مجموع المكالمات الواردة ( غير شامل اوقات الصلوات )'),
+            alignment: 'right',
+            bold: true }
+          ],
+          [
+            store.data[0][k]['P'],
+            { text: rtl(titles[k][0]),
+            alignment: 'right',
+            bold: true }
+          ],
+        ]
+      }
+    },
+    {
+      text: rtl('التفاصيل:-'),
+      alignment: 'right',
+      marginRight: 45,
+      marginTop: 8,
+    },
+    {
+      marginLeft: store.emp.withEmp? 108 : 207,
+      table: {
+        // headers are automatically repeated if the table spans over multiple pages
+        // you can declare how many rows should be treated as headers
+        headerRows: 1,
+        widths: store.emp.withEmp? [ 45, 50, 45, 90, 50 ] : [ 45, 50, 45, 50 ],
+
+        body: store.emp.withEmp? [
+          [
+            { text: 'مشغول' },
+            { text: ' الرد يتم لم ' },
+            { text: 'الرد تم ' },
+            { text: 'الموظف' },
+            { text: 'التحويلة' },
+          ],
+          [
+            store.data[0][k]['RB80'],
+            store.data[0][k]['N80'],
+            store.data[0][k]['A80'],
+            rtl(store.emp[k]['1080']),
+            { text: '1080' }
+          ],
+          [
+            store.data[0][k]['RB84'],
+            store.data[0][k]['N84'],
+            store.data[0][k]['A84'],
+            rtl(store.emp[k]['1084']),
+            { text: '1084' }
+          ]
+        ]:
+        [
+          [
+            { text: 'مشغول' },
+            { text: ' الرد يتم لم ' },
+            { text: 'الرد تم ' },
+            { text: 'التحويلة' },
+          ],
+          [
+            store.data[0][k]['RB80'],
+            store.data[0][k]['N80'],
+            store.data[0][k]['A80'],
+            { text: '1080' }
+          ],
+          [
+            store.data[0][k]['RB84'],
+            store.data[0][k]['N84'],
+            store.data[0][k]['A84'],
+            { text: '1084' }
+          ]
+        ]
+      }
+    }
+  ))
+
+  return content
+}
+
 const docDefinition =  {
     pageSize: 'A4',
     pageMargins: [ 60, 8 ],
-    content: [
-      {
-        fontSize: 12,
-        alignment: 'right',
-        decoration: 'underline',
-        marginTop: 120,
-        text: [
-          {text: store.date },
-          ' ',
-          {text: store.day },
-        ],
-      },
-      {
-        text: 'والمسائية الصباحية الدوام فترات خلال سنتر الكول لقسم الواردة المكالمات لعدد اليومي التقرير ',
-        alignment: 'center',
-        font: 'Amiri',
-        bold: true,
-        decoration: 'underline',
-        fontSize: 14,
-        marginRight: 4,
-        marginTop: 45,
-      },
-      {
-        text: rtl(' الفترة الصباحية ]  من الساعة 9  صباحا وحتى الساعة 4  عصرا ['),
-        alignment: 'right',
-        font: 'Amiri',
-        fontSize: 12,
-        marginRight: 45,
-        marginTop: 45,
-      },
-      {
-        marginLeft: 70,
-        table: {
-          // headers are automatically repeated if the table spans over multiple pages
-          // you can declare how many rows should be treated as headers
-          headerRows: 1,
-          widths: [ 45, 300 ],
-
-          body: [
-            [
-              store.data['M']['A'],
-              { text: rtl('مجموع المكالمات التي تم الرد عليها'),
-              alignment: 'right',
-              bold: true }
-            ],
-            [
-              store.data['M']['N'],
-              { text: rtl('مجموع المكالمات التي لم يتم الرد عليها )  شامل المشغول ('),
-              alignment: 'right',
-              bold: true }
-            ],
-            [
-              store.data['M']['AN'],
-              { text: rtl('مجموع المكالمات الواردة )  غير شامل اوقات الصلوات ('),
-              alignment: 'right',
-              bold: true }
-            ],
-            [
-              store.data['M']['P'],
-              { text: rtl('عدد المكالمات الواردة اوقات الصلوات ]  الظهر والعصر ['),
-              alignment: 'right',
-              bold: true }
-            ],
-          ]
-        }
-      },
-      {
-        text: rtl('التفاصيل:-'),
-        alignment: 'right',
-        marginRight: 45,
-        marginTop: 8,
-      },
-      {
-        marginLeft: 205,
-        table: {
-          // headers are automatically repeated if the table spans over multiple pages
-          // you can declare how many rows should be treated as headers
-          headerRows: 1,
-          widths: [ 45, 50, 45, 50 ],
-
-          body: [
-            [
-              { text: 'مشغول' },
-              { text: ' الرد يتم لم ' },
-              { text: 'الرد تم ' },
-              { text: 'التحويلة' },
-            ],
-            [
-              store.data['M']['RB80'],
-              store.data['M']['N80'],
-              store.data['M']['A80'],
-              { text: '1080' }
-            ],
-            [
-              store.data['M']['RB84'],
-              store.data['M']['N84'],
-              store.data['M']['A84'],
-              { text: '1084' }
-            ]
-          ]
-        }
-      },
-      {
-        text: rtl(' الفترة المسائية ]  من الساعة 4  عصرا وحتى الساعة 11  مساء ['),
-        alignment: 'right',
-        font: 'Amiri',
-        fontSize: 12,
-        marginRight: 45,
-        marginTop: 60,
-      },
-      {
-        marginLeft: 70,
-        table: {
-          // headers are automatically repeated if the table spans over multiple pages
-          // you can declare how many rows should be treated as headers
-          headerRows: 1,
-          widths: [ 45, 300 ],
-
-          body: [
-            [
-              store.data['E']['A'],
-              { text: rtl('مجموع المكالمات التي تم الرد عليها'),
-              alignment: 'right',
-              bold: true }
-            ],
-            [
-              store.data['E']['N'],
-              { text: rtl('مجموع المكالمات التي لم يتم الرد عليها )  شامل المشغول ('),
-              alignment: 'right',
-              bold: true }
-            ],
-            [
-              store.data['E']['AN'],
-              { text: rtl('مجموع المكالمات الواردة )  غير شامل اوقات الصلوات ('),
-              alignment: 'right',
-              bold: true }
-            ],
-            [
-              store.data['E']['P'],
-              { text: rtl('عدد المكالمات الواردة اوقات الصلوات ]  الظهر والعصر ['),
-              alignment: 'right',
-              bold: true }
-            ],
-          ]
-        }
-      },
-      {
-        text: rtl('التفاصيل:-'),
-        alignment: 'right',
-        marginRight: 45,
-        marginTop: 8,
-      },
-      {
-        marginLeft: 205,
-        table: {
-          // headers are automatically repeated if the table spans over multiple pages
-          // you can declare how many rows should be treated as headers
-          headerRows: 1,
-          widths: [ 45, 50, 45, 50 ],
-
-          body: [
-            [
-              { text: 'مشغول' },
-              { text: ' الرد يتم لم ' },
-              { text: 'الرد تم ' },
-              { text: 'التحويلة' },
-            ],
-            [
-              store.data['E']['RB80'],
-              store.data['E']['N80'],
-              store.data['E']['A80'],
-              { text: '1080' }
-            ],
-            [
-              store.data['E']['RB84'],
-              store.data['E']['N84'],
-              store.data['E']['A84'],
-              { text: '1084' }
-            ]
-          ]
-        }
-      },
-    ],
+    content: getContent(),
     defaultStyle: {
       font: 'Almarai',
       alignment: 'center',
@@ -224,7 +189,7 @@ const docDefinition =  {
 }
 
 const downloadPdf = async () => {
-  pdfMake.createPdf(docDefinition).download(`${store.date} ${store.day}`);
+  pdfMake.createPdf(docDefinition).download(`${date1} ${day1}`);
 }
 
 const viewPdf = async () => {
@@ -236,6 +201,11 @@ const printPdf = async () => {
 }
 
 function rtl(txt) {
-  return txt.split(' ').reverse().join(' ')
+  return (' ' + txt)
+    .split(' ')
+    .reverse()
+    .join(' ')
+    .replace(/\]/g, "^").replace(/\[/g, " ]").replace(/\^/g, "[")
+    .replace(/\)/g, "^").replace(/\(/g, " )").replace(/\^/g, "(")
 }
 </script>

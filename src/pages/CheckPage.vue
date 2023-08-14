@@ -1,10 +1,10 @@
 <template>
   <q-page class="row justify-center items-start q-pa-md">
-    <div v-if="store.files.length > 0" class="col-12">
+    <div class="col-12">
       <q-table
         class="centared"
         :columns="columns"
-        :rows="store.checkData"
+        :rows="rows"
         :rows-per-page-options="[0]"
         row-key="id"
         separator="cell"
@@ -12,17 +12,51 @@
         dense
       />
     </div>
-    <div v-else>
-      <q-file v-model="store.files" label="الملفات . . ." accept=".csv" multiple filled />
-    </div>
   </q-page>
 </template>
 
 <script setup>
-import { watch } from 'vue'
+import { computed, onBeforeMount } from 'vue'
 import { useCentralStore } from "../stores/central/index"
+import { useRouter } from "vue-router"
 
 const store = useCentralStore()
+const router = useRouter()
+
+const rows = computed(() => {
+  const r = []
+  store.data.forEach(v => {
+    r.push({
+      "date": v['date'],
+      "day": v['day'],
+      "MA": v['M']['A'],
+      "MN": v['M']['N'],
+      "MAN": v['M']['AN'],
+      "MP": v['M']['P'],
+      "MA80": v['M']['A80'],
+      "MN80": v['M']['N80'],
+      "MRB80": v['M']['RB80'],
+      "MGB80": v['M']['GB80'],
+      "MA84": v['M']['A84'],
+      "MN84": v['M']['N84'],
+      "MRB84": v['M']['RB84'],
+      "MGB84": v['M']['GB84'],
+      "EA": v['E']['A'],
+      "EN": v['E']['N'],
+      "EAN": v['E']['AN'],
+      "EP": v['E']['P'],
+      "EA80": v['E']['A80'],
+      "EN80": v['E']['N80'],
+      "ERB80": v['E']['RB80'],
+      "EGB80": v['E']['GB80'],
+      "EA84": v['E']['A84'],
+      "EN84": v['E']['N84'],
+      "ERB84": v['E']['RB84'],
+      "EGB84": v['E']['GB84'],
+    })
+  })
+  return r
+})
 
 const columns = [
   {name: 'date', label: 'date', field: 'date', sortable: true},
@@ -53,8 +87,9 @@ const columns = [
   {name: 'EGB84', label: 'EGB84', field: 'EGB84'},
 ]
 
-watch(() => store.files, () => store.parseFile())
-
+onBeforeMount(() => {
+  if (store.data.length < 1) router.replace("/")
+})
 </script>
 
 <style>
