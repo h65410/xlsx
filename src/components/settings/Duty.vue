@@ -1,8 +1,9 @@
 <template>
   <div class="q-ma-sm">
-    <q-card style="width: 300px;">
+    <q-card style="width: 350px;">
     <q-card-section>
       <div class="text-center text-h6 q-pb-sm">اوقات دوام {{ title }}</div>
+      <q-separator class="full-width q-my-sm" />
       <div v-for="k in ['M', 'E']" class="row justify-between">
         <div class="col-6 q-pa-sm">
           <div class="text-subtitle1">{{ duty[k]['startLabel'] }}</div>
@@ -31,13 +32,13 @@
         <div class="col-6 q-pa-sm">
           <div class="text-subtitle1">{{ duty[k]['endLabel'] }}</div>
         <q-input
-        v-model="duty[k]['end']"
-        mask="time"
-        :rules="['time']"
-        hide-hint
-        hide-bottom-space
-        filled
-        dense
+          v-model="duty[k]['end']"
+          mask="time"
+          :rules="['time']"
+          hide-hint
+          hide-bottom-space
+          filled
+          dense
         >
           <template v-slot:append>
             <q-icon name="access_time" class="cursor-pointer">
@@ -52,9 +53,32 @@
           </template>
         </q-input>
         </div>
+        <div class="col-6 q-pa-sm">
+            <div class="text-subtitle1">1080</div>
+          <q-input
+          v-model="duty[k]['1080']"
+          hide-hint
+          hide-bottom-space
+          filled
+          dense
+           />
+          </div>
+        <div class="col-6 q-pa-sm">
+            <div class="text-subtitle1">1084</div>
+          <q-input
+          v-model="duty[k]['1084']"
+          hide-hint
+          hide-bottom-space
+          filled
+          dense
+           />
+          </div>
+          <q-separator class="full-width q-my-sm" />
+     </div>
+     <div>
      </div>
     </q-card-section>
-    <q-card-actions class="justify-center q-pt-lg">
+    <q-card-actions class="justify-center q-py-md">
       <q-btn class="col-6" label="حفظ" color="primary" @click="store.saveDuty(dn)" />
     </q-card-actions>
   </q-card>
