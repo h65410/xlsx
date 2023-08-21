@@ -26,6 +26,7 @@ export const useCentralStore = defineStore("central", {
     },
     parseFile() {
       this.processing = true;
+      const terminals = this.settings.terminals;
       const data1: any[] = [];
       this.files.forEach((file) => {
         Papa.parse(file, {
@@ -84,7 +85,7 @@ export const useCentralStore = defineStore("central", {
               const p4End = date.addToDate(p4Start, { minutes: 30 });
               results.data
                 .filter((v: any) =>
-                  ["1080", "1084"].includes(v["Dest Channel Extension"])
+                  terminals.includes(v["Dest Channel Extension"])
                 )
                 .filter((v: any) => v["Action Type"] == "RINGGROUP[6405]")
                 .forEach((v: any) => {
@@ -110,12 +111,15 @@ export const useCentralStore = defineStore("central", {
 
               // Fix Disconnected
               Object.keys(data).forEach((k) => {
-                if (!data[k]["1080"]) data[k]["1080"] = "NO ANSWER";
-                if (!data[k]["1084"]) data[k]["1084"] = "NO ANSWER";
+                terminals.forEach((t: any) => {
+                  if (!data[k][t]) data[k][t] = "NO ANSWER";
+                });
               });
 
               Object.values(data)
-                .filter((v) => !(v["1080"] == "BUSY" && v["1084"] == "BUSY"))
+                .filter(
+                  (v) => terminals.filter((t: any) => v[t] != "BUSY").length > 0
+                )
                 .forEach((v) => {
                   const dd = date.extractDate(
                     data[v["id"]]["d"].split(" ")[1].substring(0, 5),
@@ -357,6 +361,7 @@ function getSettings() {
     localStorage.getItem("settings") ||
     JSON.stringify({
       withEmp: true,
+      terminals: ["1080", "1084"],
     });
 
   return JSON.parse(str);

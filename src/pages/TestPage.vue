@@ -10,7 +10,7 @@
       />
     </div>
     <div class="row justify-center">
-      <q-table :rows="data[0]" :pagination="[0]" />
+      <q-table :rows="data[0]" :rows-per-page-options="[0]" />
     </div>
   </q-page>
 </template>

@@ -2,7 +2,7 @@ import Papa from "papaparse";
 import { date } from "quasar";
 
 export const getData = (files: any[]) => {
-  return new Promise((resolve, reject) => {
+  return new Promise<Record<string, any>[][]>((resolve, reject) => {
     const data: any[] = [];
     files.forEach((file) => {
       Papa.parse(file, {
